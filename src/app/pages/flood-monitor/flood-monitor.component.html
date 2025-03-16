@@ -1,0 +1,112 @@
+<div class="max-w-6xl mx-auto pt-6 px-4">
+  <h1 class="text-center text-3xl font-bold   mb-6 drop-shadow-sm">Моніторинг появи повені</h1>
+
+  <!-- Dialog remains the same since it's a PrimeNG component -->
+  <p-dialog header="Повідомити про зміну факторів"  [modal]="true" [(visible)]="isFactorSettingsDialogVisible">
+    <form [formGroup]="form" class="flex flex-col gap-4 max-h-96">
+      <div class="field">
+        <label for="factorType" class="block text-sm font-medium mb-2 text-gray-700">Оберіть фактор:</label>
+        <p-select id="factorType" [options]="FACTOR_OPTIONS" optionLabel="label" optionValue="value"
+                  formControlName="factorType" placeholder="Оберіть фактор" styleClass="w-full"></p-select>
+      </div>
+      <div class="field">
+        <label for="factorValue" class="block text-sm font-medium mb-2 text-gray-700">Значення:</label>
+        <p-select id="factorValue" [options]="currentValueOptions()" formControlName="factorValue"
+                  placeholder="Оберіть фактор" styleClass="w-full"  appendTo="body" ></p-select>
+      </div>
+      <p-button label="Застосувати" styleClass="w-full" (onClick)="applyValue()"></p-button>
+    </form>
+  </p-dialog>
+
+  <!-- Cards section with improved styling and larger images -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <!-- Water Level Card -->
+    @if(activeRuleIndex() == 0 || rules[activeRuleIndex()].waterLevel){
+      <div class="transform transition-all duration-300 hover:scale-105 cursor-pointer" (click)="onFactorTypeClick('waterLevel', waterLevel())">
+        <p-card styleClass="bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg border-0">
+          <div class="flex flex-col justify-center text-center">
+            <span class="text-blue-700 font-semibold mb-2">Рівень води</span>
+            <div class="p-2 w-56 h-56 mx-auto mb-3 flex items-center justify-center">
+              <img [src]="waterLevelImgUrl()" alt="рівень_води" class="w-48 h-48 object-contain">
+            </div>
+            <span class="font-medium text-lg text-blue-800">{{ waterLevel() }}</span>
+          </div>
+        </p-card>
+      </div>
+    }
+
+
+    @if(activeRuleIndex() == 0 || rules[activeRuleIndex()].temperature){
+    <div class="transform transition-all duration-300 hover:scale-105 cursor-pointer" (click)="onFactorTypeClick('temperature',temperatureStatus())">
+      <p-card styleClass="bg-gradient-to-br from-red-50 to-red-100 shadow-lg border-0">
+        <div class="flex flex-col justify-center text-center">
+          <span class="text-red-700 font-semibold mb-2">Температура</span>
+          <div class="p-2 w-56 h-56 mx-auto mb-3 flex items-center justify-center">
+            <img [src]="temperatureStatusImgUrl()" alt="температура" class="w-48 h-48 object-contain">
+          </div>
+          <span class="font-medium text-lg text-red-800">{{ temperatureStatus() }}</span>
+        </div>
+      </p-card>
+    </div>
+    }
+    @if(activeRuleIndex() == 0 || rules[activeRuleIndex()].snow){
+    <div class="transform transition-all duration-300 hover:scale-105 cursor-pointer" (click)="onFactorTypeClick('snow',snowStatus())">
+      <p-card styleClass="bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg border-0">
+        <div class="flex flex-col justify-center text-center">
+          <span class="text-gray-700 font-semibold mb-2">Сніг</span>
+          <div class="p-2 w-56 h-56 mx-auto mb-3 flex items-center justify-center ">
+            <img [src]="snowStatusImgUrl()" alt="сніг" class="w-48 h-48 object-contain">
+          </div>
+          <span class="font-medium text-lg text-gray-800">{{ snowStatus() }}</span>
+        </div>
+      </p-card>
+    </div>
+    }
+    @if(activeRuleIndex() == 0 || rules[activeRuleIndex()].rain){
+    <div class="transform transition-all duration-300 hover:scale-105 cursor-pointer" (click)="onFactorTypeClick('rain', rainStatus())">
+      <p-card styleClass="bg-gradient-to-br from-cyan-50 to-cyan-100 shadow-lg border-0">
+        <div class="flex flex-col justify-center text-center">
+          <span class="text-cyan-700 font-semibold mb-2">Дощ</span>
+          <div class="p-2 w-56 h-56 mx-auto mb-3 flex items-center justify-center ">
+            <img [src]="rainStatusImgUrl()" alt="дощ" class="w-48 h-48 object-contain">
+          </div>
+          <span class="font-medium text-lg text-cyan-800">{{ rainStatus() }}</span>
+        </div>
+      </p-card>
+    </div>
+    }
+  </div>
+  @if(isSimulationRunning()){
+    <div  class="mt-4 text-center">
+      <p class="text-blue-600">Симуляція активна: Правило {{ (activeRuleIndex()) + 1}} з {{ rules.length }}</p>
+      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+        <div class="bg-blue-600 h-2.5 rounded-full"
+             [style.width]="(100 - (simulationTimeRemaining() / simulationInterval) * 100) + '%'"></div>
+      </div>
+    </div>
+  }
+  <p-panel  styleClass="shadow-lg border-0">
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-col justify-center items-center p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+        <span class="text-gray-700 font-semibold">Стан повені</span>
+        <div class="flex  flex-col items-center gap-3">
+          <div class="flex flex-col justify-center items-center w-80 h-80">
+            <img [src]="floodStatusImgUrl()" alt="статус_повені" class="w-72 h-72">
+          </div>
+          <span [ngClass]="{
+            'font-bold text-xl text-red-700': floodStatus() === 'Евакуювати',
+            'font-bold text-xl text-yellow-600': floodStatus() === 'Посилити увагу',
+            'font-bold text-xl text-green-700': floodStatus() === 'Не турбувати'
+          }">{{ floodStatus() }}</span>
+        </div>
+      </div>
+    </div>
+  </p-panel>
+  <div class="mt-6 flex justify-center">
+    <button
+      (click)="isSimulationRunning() ? stopFloodSimulation() : startFloodSimulation()"
+      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+      {{ isSimulationRunning() ? 'Зупинити симуляцію' : 'Почати симуляцію' }}
+    </button>
+  </div>
+</div>
