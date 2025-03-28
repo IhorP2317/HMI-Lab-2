@@ -1,0 +1,143 @@
+<div class="max-w-6xl mx-auto p-4 mt-6 flex flex-col gap-8">
+  <!-- Header Section -->
+  <div class="text-center">
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2">
+      Оптимальний розподіл автобусів
+    </h1>
+    <p class="text-gray-600 dark:text-gray-300">
+      Система розрахунку оптимального використання транспортних засобів для евакуації
+    </p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="grid gap-8 lg:grid-cols-2">
+    <!-- Buses Table Section -->
+    <p-card class="shadow-lg rounded-xl">
+      <ng-template pTemplate="header">
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-500 p-4 rounded-t-lg">
+          <h2 class="text-white text-xl font-bold">Доступні автобуси</h2>
+        </div>
+      </ng-template>
+
+      <p-table [value]="vehicles" [rows]="3" [paginator]="true"
+               class="p-datatable-striped p-datatable-gridlines"
+               styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr class="bg-gray-50 dark:bg-gray-800">
+            <th class="p-3 text-center">Тип</th>
+            <th class="p-3 text-center">Місткість</th>
+            <th class="p-3 text-center">Доступно</th>
+            <th class="p-3 text-center">Мін.</th>
+            <th class="p-3 text-center">Макс.</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-vehicle>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <td class="p-3 text-center">
+              <div class="flex flex-col items-center">
+                <img [src]="vehicle.imageSrc" [alt]="vehicle.name"
+                     class="w-40 h-32 object-contain mb-2">
+                <span class="font-medium">{{ vehicle.name }}</span>
+              </div>
+            </td>
+            <td class="p-3 text-center">{{ vehicle.capacity }}</td>
+            <td class="p-3 text-center">{{ vehicle.units }}</td>
+            <td class="p-3 text-center">{{ vehicle.capacity }}</td>
+            <td class="p-3 text-center">{{ vehicle.capacity * vehicle.units }}</td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+          <tr class="bg-primary-100 dark:bg-primary-900 font-semibold">
+            <td class="p-3 text-center">Всього</td>
+            <td class="p-3 text-center">{{ totalCapacity }}</td>
+            <td class="p-3 text-center">{{ totalUnits }}</td>
+            <td class="p-3 text-center">{{ totalMinPeople }}</td>
+            <td class="p-3 text-center">{{ totalMaxPeople }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+
+    <!-- Calculation Section -->
+    <div class="space-y-8">
+      <!-- Input Card -->
+      <p-card class="shadow-lg rounded-xl">
+        <ng-template pTemplate="header">
+          <div class="bg-gradient-to-r from-green-500 to-teal-500 p-4 rounded-t-lg">
+            <h2 class="text-white text-xl font-bold">Розрахунок</h2>
+          </div>
+        </ng-template>
+
+        <form [formGroup]="vehicleForm" (ngSubmit)="calculateVehicles()" class="space-y-4">
+          <div class="p-field">
+            <label for="amountPeopleToEvacuate" class="block mb-2 font-medium text-gray-700">
+              Кількість людей для евакуації
+            </label>
+            <div class="flex gap-2">
+              <p-inputNumber inputId="amountPeopleToEvacuate"
+                             formControlName="amountPeopleToEvacuate"
+                             [min]="1"
+                             class="w-full"
+                             inputStyleClass="w-full"
+                             placeholder="Введіть кількість людей...">
+              </p-inputNumber>
+              <p-button type="submit" label="Розрахувати" icon="pi pi-calculator"
+                        [disabled]="vehicleForm.invalid"
+                        styleClass="p-button-success">
+              </p-button>
+            </div>
+          </div>
+        </form>
+      </p-card>
+
+      <!-- Results Section -->
+      @if(vehicleUsages.length){
+        <p-card class="shadow-lg rounded-xl">
+          <ng-template pTemplate="header">
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-t-lg">
+              <h2 class="text-white text-xl font-bold">Результати розрахунку</h2>
+            </div>
+          </ng-template>
+
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="p-4 bg-green-100 rounded-lg text-center">
+                <div class="text-sm text-green-600">Використано автобусів</div>
+                <div class="text-2xl font-bold text-green-700">{{ busesUsed }}</div>
+              </div>
+              <div class="p-4 bg-red-100 rounded-lg text-center">
+                <div class="text-sm text-red-600">Вільні місця</div>
+                <div class="text-2xl font-bold text-red-700">{{ freeSeats }}</div>
+              </div>
+            </div>
+
+            <p-table [value]="vehicleUsages"  class="p-datatable-sm" [rows]="2" [paginator]="true">
+              <ng-template pTemplate="header">
+                <tr class="bg-gray-50 dark:bg-gray-800">
+                  <th class="p-3 text-center">Тип автобуса</th>
+                  <th class="p-3 text-center">Кількість</th>
+                  <th class="p-3 text-center">Зайнято місць</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-vehicle>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="p-3 text-center">
+                    <div class="flex flex-col items-center">
+                      <img [src]="vehicle.imageSrc" [alt]="vehicle.name"
+                           class="w-40 h-32 object-contain mb-2">
+                      <span class="font-medium">{{ vehicle.name }}</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">{{ vehicle.usedVehicles }}</td>
+                  <td class="p-3 text-center">{{ vehicle.takenSeats }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-card>
+      }
+    </div>
+  </div>
+</div>

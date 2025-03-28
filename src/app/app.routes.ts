@@ -9,8 +9,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'vehicles',
+    loadComponent: () =>
+      import('./pages/vehicles/vehicles.component').then(
+        (c) => c.VehiclesComponent,
+      ),
+  },
+  {
     path: '',
-    redirectTo: 'flood-monitor',
+    redirectTo: 'vehicles',
     pathMatch: 'full',
   },
 ];

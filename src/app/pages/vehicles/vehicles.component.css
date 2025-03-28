@@ -1,0 +1,3 @@
+::ng-deep.p-datatable-tbody:has(+ .p-datatable-tfoot) > tr:last-child > td {
+  border-width: 1px 1px 0 1px;
+}
